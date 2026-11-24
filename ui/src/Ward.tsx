@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { gateApi } from '../services/api';
+import { towerApi } from './api';
 
 /**
  * HIMINBJÖRG — the watchtower in the high seat.
+ *
+ * Moved from Hlidskjalf (Ymir's apps/hlidskjalf/src/components/Ward.tsx, plan 370). In the tower it reads the
+ * tower's own server; with `page` it is shown open, in place, as the tower's own page.
  *
  * Garmr notices, Vörðr judges, Gná speaks. This panel is a *glass*, not a door:
  * it reads `/api/ward` (the judged findings, the heartbeat, the pause marker) and
@@ -26,14 +29,15 @@ type WardState = {
 
 const POLL_MS = 30_000;
 
-export function Ward() {
+export function Ward({ page = false }: { page?: boolean } = {}) {
   const [state, setState] = useState<WardState | null>(null);
-  const [open, setOpen] = useState(false);
+  const [openState, setOpen] = useState(false);
+  const open = page || openState;
   const panelRef = useRef<HTMLDivElement | null>(null);
 
   const read = useCallback(async () => {
     try {
-      setState(await gateApi.ward());
+      setState(await towerApi.ward());
     } catch {
       setState(null); // the gate is unreachable: say nothing rather than invent a calm
     }
@@ -46,13 +50,13 @@ export function Ward() {
   }, [read]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!openState) return;
     const away = (e: MouseEvent) => {
       if (!panelRef.current?.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener('mousedown', away);
     return () => document.removeEventListener('mousedown', away);
-  }, [open]);
+  }, [openState]);
 
   const critical = state?.bySeverity?.CRITICAL ?? 0;
   const high = state?.bySeverity?.HIGH ?? 0;
@@ -83,9 +87,9 @@ export function Ward() {
 
       {open && (
         <div style={{
-          position: 'absolute', right: 0, top: 'calc(100% + 8px)', width: 460, zIndex: 40,
+          ...(page ? { position: 'static', width: 'auto' } : { position: 'absolute', right: 0, top: 'calc(100% + 8px)', width: 460, zIndex: 40 }),
           background: 'var(--ymir-panel, #111)', border: '1px solid var(--ymir-line, #333)',
-          borderRadius: 10, padding: 14, fontSize: 12, lineHeight: 1.5,
+          borderRadius: page ? 0 : 10, padding: 14, fontSize: page ? 14 : 12, lineHeight: 1.5,
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <strong>Himinbjörg — the watchtower</strong>
@@ -108,7 +112,7 @@ export function Ward() {
                 {' '}HIGH {state.bySeverity.HIGH ?? 0} · MEDIUM {state.bySeverity.MEDIUM ?? 0}
               </p>
               {state.newest.length === 0 && <p style={{ margin: 0, opacity: 0.7 }}>Nothing above MEDIUM has been judged yet.</p>}
-              <ul style={{ margin: 0, padding: 0, listStyle: 'none', maxHeight: 260, overflowY: 'auto' }}>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', maxHeight: page ? 'none' : 260, overflowY: 'auto' }}>
                 {state.newest.map((row, i) => (
                   <li key={`${row.ts}-${i}`} style={{ padding: '6px 0', borderTop: '1px solid var(--ymir-line, #222)' }}>
                     <div style={{ display: 'flex', gap: 8 }}>

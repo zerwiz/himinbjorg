@@ -1,0 +1,24 @@
+{
+  "name": "@zerwiz/himinbjorg",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Himinbjörg — the watchtower: a read-only glass over the house's watchers, installed by Ymir as an app.",
+  "license": "Apache-2.0",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "build": "bun build ui/src/main.tsx --outdir ui/dist --minify && cp ui/index.html ui/dist/index.html",
+    "test": "bun test tests",
+    "serve": "bun server/main.ts",
+    "start": "electron ."
+  },
+  "trustedDependencies": ["electron"],
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "electron": "43.8.9"
+  }
+}
