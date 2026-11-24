@@ -58,7 +58,7 @@ case "${1:-}" in
     while IFS= read -r f; do
       mkdir -p "$ROOT/$(dirname "$f")"
       git -C "$c" show "$full:$f" > "$ROOT/$f" || exit 2
-      chmod +x "$ROOT/$f"
+      case "$f" in *.sh|*.py) chmod +x "$ROOT/$f" ;; esac
     done < <(files_of)
     sed -i "s|^ymir_ref:.*|ymir_ref: $full|" "$LEDGER"
     printf 'vendor-sync: copied from Ymir %s — run the tests, then commit VENDORED with the copies\n' "${full:0:12}"

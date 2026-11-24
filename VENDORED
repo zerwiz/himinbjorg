@@ -20,3 +20,6 @@ files:
   bin/vault/hoard-lib.sh
   bin/fleet/ymir-platform.sh
   bin/forge/pr-patterns.sh
+  bin/forge/maker-names.py
+  bin/gates/maker-allow.txt
+  bin/gates/maker-words.txt

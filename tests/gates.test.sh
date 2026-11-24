@@ -117,7 +117,12 @@ else bad "ci-deny-list — the CI road did not refuse the host, or printed the l
 ev="$WORK/event.json"
 python3 -c 'import json,sys; json.dump({"pull_request": {"number": 1, "title": "tower: a page", "body": "Reach me at " + sys.argv[1], "user": {"login": "tester"}, "head": {"ref": "feature/x"}}}, open(sys.argv[2], "w"))' "$mail" "$ev"
 out="$(env -u HIMINBJORG_DENY_LIST YMIR_HOME="$WORK/clean.home" GITHUB_EVENT_PATH="$ev" bash "$ROOT/bin/gates/guards/pr-identity-guard.sh" --ci 2>&1)"; rc=$?
-[ "$rc" -eq 1 ] && ok "pr-body-email — pr-identity-guard refuses it" || bad "pr-body-email — pr-identity-guard did not refuse (exit $rc)" "$out"
+# Refused FOR THE MAILBOX, not because the ward could not run (a missing helper also exits 1).
+[ "$rc" -eq 1 ] && ! printf '%s' "$out" | grep -qiE "no such file|can't open|command not found" && ok "pr-body-email — pr-identity-guard refuses it" || bad "pr-body-email — pr-identity-guard did not refuse (exit $rc)" "$out"
+
+python3 -c 'import json,sys; json.dump({"pull_request": {"number": 2, "title": "tower: a page", "body": "Adds the page.", "user": {"login": "tester"}, "head": {"ref": "feature/x"}}}, open(sys.argv[1], "w"))' "$ev"
+out="$(env -u HIMINBJORG_DENY_LIST YMIR_HOME="$WORK/clean.home" GITHUB_EVENT_PATH="$ev" bash "$ROOT/bin/gates/guards/pr-identity-guard.sh" --ci 2>&1)"; rc=$?
+[ "$rc" -eq 0 ] && ok "pr-body-clean — pr-identity-guard lets an honest pull request pass" || bad "pr-body-clean — an honest pull request was refused (exit $rc)" "$out"
 
 printf 'gates_test: %s passed, %s failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

@@ -6,7 +6,7 @@
 
 The repository received its gates before any of the tower's code:
 
-- Ymir's own wards, vendored byte for byte with the three libraries they source. `VENDORED` records the Ymir commit,
+- Ymir's own wards, vendored byte for byte with the libraries and word lists they read. `VENDORED` records the Ymir commit,
   and `bin/gates/vendor-sync.sh --check` proves the copies match it, from a local checkout or over https.
 - One door, `bin/gates/run-gates.sh` (`staged`, `range`, `tree`), called by `.githooks/pre-commit`,
   `.githooks/pre-push` and `.github/workflows/gates.yml` alike.
@@ -28,5 +28,12 @@ carries both (see `.pi/README.md`) so the copies stay unedited.
 
 ## Proof
 
-- `bash tests/gates.test.sh` → `gates_test: 14 passed, 0 failed` (with gitleaks 8.30.1, checksum-verified).
-- `bin/gates/vendor-sync.sh --check` → `14 files in step with Ymir 7c27f324fdd5`, by both roads.
+- `bash tests/gates.test.sh` → `gates_test: 15 passed, 0 failed` (with gitleaks 8.30.1, checksum-verified).
+- `bin/gates/vendor-sync.sh --check` → `17 files in step with Ymir 7c27f324fdd5`, by both roads.
+
+## Repair, the same day: the pull-request ward's helper
+
+The first CI run failed at `pr-identity-guard.sh --ci`: `bin/forge/pr-patterns.sh` calls `bin/forge/maker-names.py`,
+which reads `bin/gates/maker-allow.txt` and `maker-words.txt`, and none of the three had been vendored. The local
+test had passed anyway, because a ward that cannot run also exits 1. Now the three files are vendored, the test
+refuses a pass whose output says a file could not be opened, and a clean pull request is proven to pass.
