@@ -1,0 +1,18 @@
+# .gitleaks.toml — what gitleaks reads in this repository (bin/gates/secret-scan.sh, CI).
+#
+# gitleaks' own shapes (`useDefault`), and an allowlist of the files that carry a secret SHAPE on purpose: the
+# vendored guards, which must name the shapes they hunt. The planted-fault test builds its fakes at run time in a
+# scratch repository, so it carries none.
+#
+# The operator's own words are never here. On a seat, secret-scan.sh reads them from the home and extends this
+# file at run time; in CI they arrive through bin/gates/deny-load.sh. A word in this file would be the leak.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "the vendored wards name the shapes they hunt; they carry no credential"
+paths = [
+  '''^bin/gates/guards/''',
+  '''^bin/gates/secret-scan\.sh$''',
+  '''^bin/forge/pr-patterns\.sh$''',
+]

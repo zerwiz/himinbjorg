@@ -1,0 +1,22 @@
+# VENDORED — the gates this repository borrows from Ymir, byte for byte.
+#
+# Ymir (github.com/zerwiz/ymir) owns these files. They are copied here unchanged, at the same paths, so a gate
+# here judges exactly as it judges there. Never edit a copy: change it in Ymir, then run
+#   bin/gates/vendor-sync.sh --update <ymir-commit>
+# `bin/gates/vendor-sync.sh --check` (run by CI) fails when a copy differs from Ymir at the commit below.
+ymir_ref: 7c27f324fdd5cf62fc2f3f7c9f58a67a5a884713
+files:
+  bin/gates/guards/secret-guard.sh
+  bin/gates/guards/secrets-plaintext-guard.sh
+  bin/gates/guards/public-guard.sh
+  bin/gates/guards/public-guard.py
+  bin/gates/guards/public-data-guard.sh
+  bin/gates/guards/private-guard.sh
+  bin/gates/guards/private-guard.py
+  bin/gates/guards/identity-guard.sh
+  bin/gates/guards/pr-identity-guard.sh
+  bin/gates/guards/vault-guard.sh
+  bin/gates/secret-scan.sh
+  bin/vault/hoard-lib.sh
+  bin/fleet/ymir-platform.sh
+  bin/forge/pr-patterns.sh
