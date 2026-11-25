@@ -1,0 +1,20 @@
+# himinbjorg.service — the watchtower's server, on loopback only (127.0.0.1:3896).
+#
+# Rendered by activate.sh with __APP_DIR__ set to the apps home's `current` link, so it follows every update.
+# Not enabled by the install: `systemctl --user enable --now himinbjorg.service` makes the tower watch from boot.
+[Unit]
+Description=Ymir · Himinbjörg — the watchtower's server (loopback, read only)
+After=network.target
+# A unit that restarts forever is not running (Ymir's restart-storm ward): five tries, then stop and be seen.
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
+[Service]
+Type=simple
+WorkingDirectory=__APP_DIR__
+ExecStart=__BUN__ __APP_DIR__/server/main.ts
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

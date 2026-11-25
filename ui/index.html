@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Himinbjörg</title>
+  <style>
+    /* stone and bronze, square corners, readable on a phone */
+    :root { --stone: #16181a; --slab: #1f2225; --line: #34383c; --bronze: #b0894f; --text: #e4e0d8; --muted: #9a958c;
+            --danger: #e5484d; --ymir-panel: var(--slab); --ymir-line: var(--line); }
+    @media (prefers-color-scheme: light) {
+      :root { --stone: #eeebe5; --slab: #f8f6f2; --line: #cfc9bf; --bronze: #8a6531; --text: #1d1b18; --muted: #6b665d; }
+    }
+    * { box-sizing: border-box; border-radius: 0; }
+    body { margin: 0; background: var(--stone); color: var(--text); font: 14px/1.5 system-ui, sans-serif; }
+    main { max-width: 960px; margin: 0 auto; padding: 16px; }
+    h1 { color: var(--bronze); margin: 0; font-size: 22px; letter-spacing: 0.04em; }
+    h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--bronze); margin: 24px 0 8px; }
+    section { background: var(--slab); border: 1px solid var(--line); padding: 12px; margin-top: 16px; overflow-x: auto; }
+    .muted { color: var(--muted); }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    tr.down td { color: var(--danger); }
+    .findings { color: var(--danger); }
+    code { color: var(--bronze); }
+    .gauges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .gauge { border: 1px solid var(--line); padding: 6px 10px; min-width: 96px; display: flex; justify-content: space-between; gap: 8px; }
+    .gauge b { color: var(--bronze); }
+    .gauge.down b { color: var(--danger); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

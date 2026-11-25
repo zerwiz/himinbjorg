@@ -52,3 +52,15 @@ jobs:
       - name: The pull request's own title and body
         if: github.event_name == 'pull_request'
         run: bash bin/gates/guards/pr-identity-guard.sh --ci
+
+  app:
+    # The tower itself: its server's tests and its page's build.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with: { bun-version: "1.4.2" }
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun test tests
+      - run: bun run build
+      - run: test -s ui/dist/main.js && test -s ui/dist/index.html

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Ymir · Himinbjörg
+GenericName=The watchtower
+Comment=What the house's watchers see — read, never acted on
+Exec=__YMIR_APP__ himinbjorg
+Icon=ymir-himinbjorg
+Terminal=false
+Categories=System;Monitor;
+Keywords=watch;ward;garmr;status;ymir;himinbjorg;
+StartupNotify=true
+StartupWMClass=ymir-himinbjorg

@@ -1,0 +1,21 @@
+# app.yaml — the app contract (Ymir's split, plan 01 §3; the tower's own plan 370).
+name: himinbjorg
+title: Himinbjörg — the watchtower
+kind: electron
+window_class: ymir-himinbjorg
+ports: [3896]                  # the tower's server, loopback only; DevTools 9417 (Ymir's app-lib table)
+units: [himinbjorg.service]    # the server, rendered by activate.sh from electron/himinbjorg.service.in
+launchers: [himinbjorg.desktop]
+icons: [ymir-himinbjorg]
+launch: start.sh
+state_dir: ${XDG_STATE_HOME:-~/.local/state}/himinbjorg
+config_dir: ${XDG_CONFIG_HOME:-~/.config}/himinbjorg
+ymir:
+  min_version: ""
+  doors:
+    # The tower is a glass over records the house writes. Without them it says so, in words.
+    - { name: home, need: hard }             # $YMIR_HOME: the hound's judged findings, the services register
+    - { name: garmr, need: optional }        # /var/log/ymir/garmr: the hound's heartbeat and findings
+    - { name: notify, need: optional }       # bin/notify/send.sh: the one alert when a door falls
+  packages: []
+history: "cut from zerwiz/ymir (apps/hlidskjalf/src/components/Ward.tsx, bin/ward/house-status.sh) with git filter-repo, 2026-11-25"
