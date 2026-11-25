@@ -37,3 +37,20 @@ The first CI run failed at `pr-identity-guard.sh --ci`: `bin/forge/pr-patterns.s
 which reads `bin/gates/maker-allow.txt` and `maker-words.txt`, and none of the three had been vendored. The local
 test had passed anyway, because a ward that cannot run also exits 1. Now the three files are vendored, the test
 refuses a pass whose output says a file could not be opened, and a clean pull request is proven to pass.
+
+## Correction, the same day: the deny list stays in the home (Ymir's road)
+
+This corrects the bullet above that sends the deny list to CI as the `HIMINBJORG_DENY_LIST` secret. At the operator's
+word (*"we have ways of handling private data in ymir home"*) the list is never sent to GitHub, matching Ymir exactly:
+
+- On a seat, the vendored wards read the home, as in Ymir. `bin/gates/agnostic-audit.sh`, Ymir's one engine for the
+  operator's own words, now runs in every gate pass and reads `$YMIR_HOME/hodd/identity/public-deny.txt`. The public
+  guard reads the declared words and the fleet's machine names, binding from the first commit.
+- The public CI has no home, so it judges shapes only: keys and tokens, private addresses, personal mailboxes, a real
+  tailnet host. Each ward says which half it skipped.
+- `bin/gates/deny-load.sh` and `bin/gates/deny-seed.sh` are removed; they existed only for the GitHub secret.
+  `bin/gates/deny-status.sh` says, by counts alone, whether a seat's hooks have the home's lists.
+
+Proof: `tests/gates.test.sh` → 16 passed, 0 failed. The two new cases: the home's `public-deny.txt` word is refused
+and never printed, and with no home a private address is still refused. `run-gates.sh tree` on a seat with the home's
+27 entries: every gate clean.
