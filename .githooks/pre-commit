@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# pre-commit — every commit meets the gates (bin/gates/run-gates.sh staged). Seated by bin/gates/install-hooks.sh.
+root="$(git rev-parse --show-toplevel)"
+exec bash "$root/bin/gates/run-gates.sh" staged
