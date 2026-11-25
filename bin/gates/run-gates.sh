@@ -8,14 +8,18 @@
 #
 # The judges (each is Ymir's own ward, vendored byte for byte — see VENDORED):
 #   secret     secret-guard.sh (key shapes, private env files) · gitleaks through secret-scan.sh
-#   personal   public-guard.py (names the operator declared, private addresses, personal mailboxes, fleet
-#              hosts) · private-guard.py (the home's private paths and protected material)
+#   personal   agnostic-audit.sh (the operator's own words from the home's public-deny.txt: names, hosts, domains)
+#              · public-guard.py (declared words, private addresses, personal mailboxes, fleet hosts)
+#              · private-guard.py (the home's private paths and protected material)
 #   identity   identity-guard.sh (a commit's author and committer mailbox) · pr-identity-guard.sh (CI, on a PR)
 #   vault      vault-guard.sh (a file byte-identical to one in the open vault) ·
 #              secrets-plaintext-guard.sh (a home secrets shelf committed in the clear)
 #
-# The deny list is read from the home on a seat, and from the HIMINBJORG_DENY_LIST secret in CI
-# (bin/gates/deny-load.sh). It is never in this tree.
+# THE DENY LIST STAYS IN THE HOME (Ymir's road; the operator's word, 2026-11-25: "we have ways of handling private
+# data in ymir home"). On a seat the wards read it from $YMIR_HOME, as they do in Ymir. It is never in this tree and
+# never sent anywhere: the public CI has no home, so there it judges SHAPES only (keys, private addresses, personal
+# mailboxes, a real tailnet host), and each ward says which half it skipped. bin/gates/deny-status.sh says whether
+# this seat's hooks have the list, by counts alone.
 #
 # Exit: 0 every judge clean · 1 a judge refused · 2 usage.
 set -uo pipefail
@@ -23,9 +27,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 G="$ROOT/bin/gates/guards"
 cd "$ROOT"
 
-eval "$(bash "$ROOT/bin/gates/deny-load.sh")"
-STRICT=()
-[ "${YMIR_PUBLIC_GUARD_STRICT:-}" = 1 ] && STRICT=(--strict-names)
+# The machine class is binding here, from the first commit: this repository was born swept. Without a home there
+# are no machine names to bind, so the public CI is unaffected.
+STRICT=(--strict-names)
 # This repository is not a home: the plaintext ward judges THIS tree for a secrets shelf that strayed here.
 export YMIR_SECRETS_GUARD_ROOT="$ROOT"
 
@@ -69,6 +73,7 @@ case "$verb" in
     mapfile -t files < <(git diff --cached --name-only --diff-filter=ACM)
     mapfile -t own < <([ "${#files[@]}" -gt 0 ] && printf '%s\n' "${files[@]}" | not_vendored)
     judge secret-guard        bash "$G/secret-guard.sh"
+    [ "${#own[@]}" -gt 0 ] && judge agnostic-audit bash "$G/../agnostic-audit.sh" check "${own[@]}" --root "$ROOT"
     judge public-guard        python3 "$G/public-guard.py" --staged "${STRICT[@]}"
     [ "${#own[@]}" -gt 0 ] && judge private-guard python3 "$G/private-guard.py" check "${own[@]}" --surface public
     judge identity-guard      bash "$G/identity-guard.sh" --staged
@@ -85,6 +90,7 @@ case "$verb" in
     if [ "${#files[@]}" -gt 0 ]; then
       judge public-guard      python3 "$G/public-guard.py" --added "$base" "${files[@]}" "${STRICT[@]}"
     fi
+    [ "${#own[@]}" -gt 0 ] && judge agnostic-audit bash "$G/../agnostic-audit.sh" check "${own[@]}" --base "$base" --root "$ROOT"
     [ "${#own[@]}" -gt 0 ] && judge private-guard python3 "$G/private-guard.py" check "${own[@]}" --surface public
     judge identity-guard      bash "$G/identity-guard.sh" --base "$base"
     judge vault-guard         bash "$G/vault-guard.sh" --all
@@ -95,6 +101,7 @@ case "$verb" in
     mapfile -t files < <(git ls-files)
     mapfile -t own < <(printf '%s\n' "${files[@]}" | not_vendored)
     judge secret-guard        bash "$G/secret-guard.sh" --all
+    judge agnostic-audit      bash "$G/../agnostic-audit.sh" tree --ref HEAD --root "$ROOT"   # tracked content only
     judge public-guard        python3 "$G/public-guard.py" --tree "${STRICT[@]}"
     judge private-guard       python3 "$G/private-guard.py" check "${own[@]}" --surface public
     judge vault-guard         bash "$G/vault-guard.sh" --all

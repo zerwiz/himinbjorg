@@ -17,6 +17,7 @@ files:
   bin/gates/guards/pr-identity-guard.sh
   bin/gates/guards/vault-guard.sh
   bin/gates/secret-scan.sh
+  bin/gates/agnostic-audit.sh
   bin/vault/hoard-lib.sh
   bin/fleet/ymir-platform.sh
   bin/forge/pr-patterns.sh

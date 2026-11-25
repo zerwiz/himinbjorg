@@ -22,3 +22,6 @@ author line.
 ## CHANGE LOG
 
 - **2026-11-25** — written with the gates, before any code landed (Ymir's plan 370).
+- **2026-11-25** — corrected, the same day: the deny list is **never** sent to CI (the line above that names the
+  `HIMINBJORG_DENY_LIST` secret is withdrawn). It stays in the home and is read there by the local hooks, as in Ymir;
+  the public CI judges shapes only. `bin/gates/deny-status.sh` says whether a seat has the lists.

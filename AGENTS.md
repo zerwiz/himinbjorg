@@ -33,3 +33,7 @@ to read, and keeps a small page of its own for when Gimlé is down. It reads; it
 ## CHANGE LOG
 
 - **2026-11-25** — written with the gates, before any code landed (Ymir's plan 370).
+- **2026-11-25** — corrected: the deny list never leaves the home. The bullet above that names the
+  `HIMINBJORG_DENY_LIST` secret and `deny-seed.sh` is withdrawn: both are gone. The local hooks read the home (through
+  `bin/gates/agnostic-audit.sh` and the public guard), and CI judges shapes only. `bin/gates/deny-status.sh` checks a
+  seat.

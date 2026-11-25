@@ -40,7 +40,7 @@ scratch() {
 
 run_gates() {  # <repo> [env...] -> stdout+stderr, exit code
   local d="$1"; shift
-  env -u HIMINBJORG_DENY_LIST -u CI YMIR_HOME="$d.home" YMIR_PUBLIC_GUARD_STRICT=1 \
+  env -u CI YMIR_HOME="$d.home" \
       YMIR_VAULT_GUARD_SRC="${VAULT_SRC:-}" "$@" bash "$d/bin/gates/run-gates.sh" staged 2>&1
 }
 
@@ -101,27 +101,35 @@ else
   printf 'note gitleaks is not installed on this seat — CI runs its planted fault\n'
 fi
 
-# ── the CI road: no home, the deny list arrives as the HIMINBJORG_DENY_LIST secret ───────
-d="$(scratch ci-deny-list)"
-printf 'ssh %s uptime\n' "$FAKE_HOST" > "$d/reach.sh"
-git -C "$d" add reach.sh
-deny="$(python3 -c 'import base64,json,sys; print(base64.b64encode(json.dumps({"words": [sys.argv[1]], "hosts": [sys.argv[2]], "domains": []}).encode()).decode())' "$FAKE_WORD" "$FAKE_HOST")"
-out="$(cd "$d" && env CI=1 RUNNER_TEMP="$WORK/runner-ci" HIMINBJORG_DENY_LIST="$deny" YMIR_HOME="$WORK/no-home" \
+# ── the home's public-deny list (agnostic-audit.sh, Ymir's one engine for the operator's own words) ───
+d="$(scratch public-deny)"
+printf 'name:%s\nhost:%s\n' "$FAKE_WORD" "$FAKE_HOST" > "$d.home/hodd/identity/public-deny.txt"
+printf 'Ask %s, or reach %s://%s/\n' "$FAKE_WORD" "https" "$FAKE_HOST" > "$d/notes.md"
+git -C "$d" add notes.md
+out="$(cd "$d" && run_gates "$d")"; rc=$?
+if [ "$rc" -ne 0 ] && printf '%s' "$out" | grep -Eq "gate agnostic-audit +REFUSED" && ! printf '%s' "$out" | grep -q "$FAKE_WORD"; then
+  ok "public-deny — agnostic-audit refuses the home's own word, and never prints it"
+else bad "public-deny — agnostic-audit did not refuse, or printed the word (exit $rc)" "$out"; fi
+
+# ── no home (the public CI): the shapes are still judged ─────────────────────────────────
+d="$(scratch no-home)"
+printf 'const target = "%s";\n' "$addr" > "$d/probe.ts"
+git -C "$d" add probe.ts
+out="$(cd "$d" && env -u CI YMIR_HOME="$WORK/no-home-at-all" HOME="$WORK/nohome" YMIR_VAULT_GUARD_SRC= \
        bash "$d/bin/gates/run-gates.sh" staged 2>&1)"; rc=$?
-mkdir -p "$WORK/runner-ci"
-if [ "$rc" -ne 0 ] && printf '%s' "$out" | grep -Eq "gate public-guard +REFUSED" && ! printf '%s' "$out" | grep -q "$FAKE_WORD"; then
-  ok "ci-deny-list — the secret's host is refused, and the list is never printed"
-else bad "ci-deny-list — the CI road did not refuse the host, or printed the list (exit $rc)" "$out"; fi
+if [ "$rc" -ne 0 ] && printf '%s' "$out" | grep -Eq "gate public-guard +REFUSED"; then
+  ok "no-home — with no deny list the private address is still refused"
+else bad "no-home — a shape passed without a home (exit $rc)" "$out"; fi
 
 # ── the pull-request ward (CI posture, through a fake event) ─────────────────────────────
 ev="$WORK/event.json"
 python3 -c 'import json,sys; json.dump({"pull_request": {"number": 1, "title": "tower: a page", "body": "Reach me at " + sys.argv[1], "user": {"login": "tester"}, "head": {"ref": "feature/x"}}}, open(sys.argv[2], "w"))' "$mail" "$ev"
-out="$(env -u HIMINBJORG_DENY_LIST YMIR_HOME="$WORK/clean.home" GITHUB_EVENT_PATH="$ev" bash "$ROOT/bin/gates/guards/pr-identity-guard.sh" --ci 2>&1)"; rc=$?
+out="$(env YMIR_HOME="$WORK/clean.home" GITHUB_EVENT_PATH="$ev" bash "$ROOT/bin/gates/guards/pr-identity-guard.sh" --ci 2>&1)"; rc=$?
 # Refused FOR THE MAILBOX, not because the ward could not run (a missing helper also exits 1).
 [ "$rc" -eq 1 ] && ! printf '%s' "$out" | grep -qiE "no such file|can't open|command not found" && ok "pr-body-email — pr-identity-guard refuses it" || bad "pr-body-email — pr-identity-guard did not refuse (exit $rc)" "$out"
 
 python3 -c 'import json,sys; json.dump({"pull_request": {"number": 2, "title": "tower: a page", "body": "Adds the page.", "user": {"login": "tester"}, "head": {"ref": "feature/x"}}}, open(sys.argv[1], "w"))' "$ev"
-out="$(env -u HIMINBJORG_DENY_LIST YMIR_HOME="$WORK/clean.home" GITHUB_EVENT_PATH="$ev" bash "$ROOT/bin/gates/guards/pr-identity-guard.sh" --ci 2>&1)"; rc=$?
+out="$(env YMIR_HOME="$WORK/clean.home" GITHUB_EVENT_PATH="$ev" bash "$ROOT/bin/gates/guards/pr-identity-guard.sh" --ci 2>&1)"; rc=$?
 [ "$rc" -eq 0 ] && ok "pr-body-clean — pr-identity-guard lets an honest pull request pass" || bad "pr-body-clean — an honest pull request was refused (exit $rc)" "$out"
 
 printf 'gates_test: %s passed, %s failed\n' "$pass" "$fail"

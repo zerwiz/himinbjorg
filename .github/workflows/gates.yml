@@ -3,10 +3,9 @@ name: gates
 # Every pull request and every push to main meets the same gates a commit meets on a seat
 # (bin/gates/run-gates.sh): secrets, personal data, identity and the vault. A refusal fails the run.
 #
-# The operator's deny list is never in this repository. It arrives as the HIMINBJORG_DENY_LIST secret
-# (bin/gates/deny-seed.sh writes it from the home) and bin/gates/deny-load.sh turns it into a throwaway home for
-# the run. A fork's pull request cannot read a secret, so there the shapes are judged and the words are not, and
-# the log says so.
+# The operator's deny list stays in his home, as in Ymir, and is never sent here. A runner has no home, so this run
+# judges SHAPES: keys and tokens, private addresses, personal mailboxes, a real tailnet host. His own words are
+# judged on his seats, by the same wards in the local hooks, reading the list from the home.
 on:
   pull_request:
   push:
@@ -18,8 +17,6 @@ permissions:
 jobs:
   gates:
     runs-on: ubuntu-latest
-    env:
-      HIMINBJORG_DENY_LIST: ${{ secrets.HIMINBJORG_DENY_LIST }}
     steps:
       - uses: actions/checkout@v4
         with:
