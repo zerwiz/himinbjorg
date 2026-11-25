@@ -36,10 +36,40 @@ function Doors() {
   );
 }
 
+function Health() {
+  const [w, setW] = useState<Awaited<ReturnType<typeof towerApi.watch>> | null>(null);
+  useEffect(() => {
+    const read = () => towerApi.watch().then(setW).catch(() => setW(null));
+    read();
+    const t = window.setInterval(read, 30_000);
+    return () => window.clearInterval(t);
+  }, []);
+  if (!w || !w.at) return <p className="muted">The watcher has not finished its first look yet.</p>;
+  const g = (label: string, x: { pct: number } | null) => (
+    <div className={`gauge${x && x.pct >= 90 ? ' down' : ''}`}><span>{label}</span><b>{x ? `${x.pct}%` : '—'}</b></div>
+  );
+  return (
+    <>
+      <div className="gauges">
+        {g('disk', w.host?.disk ?? null)}{g('memory', w.host?.memory ?? null)}{g('swap', w.host?.swap ?? null)}
+        {(w.host?.gpus ?? []).map((x) => <div key={x.name} className="gauge"><span>GPU</span><b>{x.memory.pct}%</b></div>)}
+      </div>
+      {w.faults.length === 0
+        ? <p>Nothing this machine runs is down.</p>
+        : <ul className="findings">{w.faults.map((f) => <li key={f.key}>{f.text}</li>)}</ul>}
+      <p className="muted">
+        {w.self ? `${w.self.roles.join(', ')} machine` : 'role unknown'} · measured {new Date(w.at).toLocaleTimeString()}
+        {w.elsewhere ? ` · ${w.elsewhere} register rows are measured on their own machine` : ''} · the whole house is in Valaskjálf
+      </p>
+    </>
+  );
+}
+
 function Tower() {
   return (
     <main>
       <header><h1>ᛉ Himinbjörg</h1><p className="muted">The watchtower. It reads; it never acts.</p></header>
+      <section><h2>This machine</h2><Health /></section>
       <section><h2>The hound</h2><Ward page /></section>
       <section><h2>The doors this machine hosts</h2><Doors /></section>
     </main>

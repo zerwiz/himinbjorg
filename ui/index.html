@@ -23,6 +23,10 @@
     tr.down td { color: var(--danger); }
     .findings { color: var(--danger); }
     code { color: var(--bronze); }
+    .gauges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .gauge { border: 1px solid var(--line); padding: 6px 10px; min-width: 96px; display: flex; justify-content: space-between; gap: 8px; }
+    .gauge b { color: var(--bronze); }
+    .gauge.down b { color: var(--danger); }
   </style>
 </head>
 <body>

@@ -43,7 +43,29 @@ From a plain clone, you need [bun](https://bun.sh):
 | `$YMIR_HOME/state/assistant/` | The assistant's heartbeat and today's answers |
 | `$YMIR_HOME/config/services.yaml`, through `bin/house-status.sh` | The doors this machine hosts, and whether each answers |
 
-The server answers `GET /api/health`, `/api/ward` and `/api/house` on loopback only. It refuses any other address
+### The watcher
+
+Every minute the tower measures what this machine runs and keeps the newest reading:
+
+- **Services.** Each row of the services register is judged on the machine that runs it: the machine its `machine:`
+  field names, or the heart when it names none. Each is matched to a systemd unit or a container of its name, or to
+  its port. The states are up, down, restarting, failed, off (stopped on purpose, `expect: off`) and unmeasured. A
+  container the register does not name is still shown, in its own group.
+- **Tunnels.** `cloudflared tunnel list` and this machine's `~/.cloudflared/config-*.yml`. A tunnel is live, dead,
+  has nothing behind it, or has no config on this machine.
+- **The host.** Disk, memory, swap and the GPU.
+
+A new fault (a registered service down, failed or restarting, this machine's tunnel dead or empty, a disk at 90 %, a
+full swap) sends **one** line through Ymir's alarm road (`bin/notify/send.sh`). It is not sent again while the fault
+stands. No alert is sent from a test, with `HIMINBJORG_ALERTS=0`, or where Ymir is not installed.
+
+### What it publishes for Valaskjálf
+
+`GET /doors/services`, `/doors/tunnels` and `/doors/host` answer in Valaskjálf's JSON door shape
+(`{number, unit, rows[{text, meta, tone, act}]}`). `bin/door.sh services|tunnels|host` gives the same as a command, for
+the hall's `VALASKJALF_DOOR_<ID>` seam. A reading the tower could not take answers 503 with the reason, never a zero.
+
+The server answers `GET /api/health`, `/api/ward`, `/api/house` and `/api/watch` on loopback only. It refuses any other address
 unless `HIMINBJORG_ALLOW_WIDE_BIND=1` is set on purpose, and no tunnel may point at it.
 
 ## The gates
